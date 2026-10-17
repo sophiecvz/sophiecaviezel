@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="a little space beyond the feed — Sophie Caviezel" />
+    <title>Sophie Caviezel</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png" />
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+    <link rel="stylesheet" href="/src/style.css" />
+    <script type="module" src="/src/main.js"></script>
+  </head>
+  <body>
+    <main class="profile">
+      <header class="profile__hero">
+        <img class="profile__portrait" src="/images/portrait.webp" alt="Sophie Caviezel" />
+
+        <div class="profile__identity">
+          <h1 class="profile__title">Sophie Caviezel</h1>
+          <p class="profile__username">@sophiecaviezel</p>
+        </div>
+      </header>
+
+      <div class="profile__content">
+        <p class="profile__description">
+          ✧ exclusive content <span class="profile__separator">◦</span> more of me<br />
+          ✦ direct messages <span class="profile__separator">◦</span> chat with me
+        </p>
+
+        <div class="profile__access">
+          <button
+            class="profile__link"
+            type="button"
+            id="access-trigger"
+            aria-controls="access-warning"
+          >
+            <span class="profile__link-label">come a little closer</span>
+          </button>
+
+          <div class="profile__warning" id="access-warning" hidden>
+            <p>18+ May Contain Sensitive Content</p>
+            <a class="profile__continue" href="https://www.fanvue.com/sophiecaviezel">
+              Continue (18+)
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <footer class="profile__footer">
+        <nav aria-label="Social links">
+          <a href="https://www.threads.com/@sophie_caviezel">Threads</a>
+          <span aria-hidden="true">|</span>
+          <a href="https://www.instagram.com/sophie_caviezel/">Instagram</a>
+          <span aria-hidden="true">|</span>
+          <a href="https://github.com/sophiecvz">GitHub</a>
+        </nav>
+      </footer>
+    </main>
+  </body>
+</html>
