@@ -8,7 +8,6 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png" />
     <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
     <link rel="stylesheet" href="/src/style.css" />
-    <script type="module" src="/src/main.js"></script>
   </head>
   <body>
     <main class="profile">
@@ -22,27 +21,35 @@
       </header>
 
       <div class="profile__content">
-        <p class="profile__description">
-          ✧ exclusive content <span class="profile__separator">◦</span> more of me<br />
-          ✦ direct messages <span class="profile__separator">◦</span> chat with me
-        </p>
-
         <div class="profile__access">
-          <button
-            class="profile__link"
-            type="button"
-            id="access-trigger"
-            aria-controls="access-warning"
-          >
-            <span class="profile__link-label">come a little closer</span>
-          </button>
+          <a class="profile__link profile__link--telegram" href="https://t.me/+TwVGQYl1WiM0ZDBi">
+            <span class="profile__link-heading">
+              <img
+                class="profile__link-icon"
+                src="/images/icon-telegram.svg"
+                alt=""
+                aria-hidden="true"
+              />
+              <span class="profile__link-label">see more of me</span>
+            </span>
+            <span class="profile__link-description">Telegram · photos &amp; moments</span>
+          </a>
 
-          <div class="profile__warning" id="access-warning" hidden>
-            <p>18+ May Contain Sensitive Content</p>
-            <a class="profile__continue" href="https://www.fanvue.com/sophiecaviezel">
-              Continue (18+)
-            </a>
-          </div>
+          <a
+            class="profile__link profile__link--fanvue"
+            href="https://www.fanvue.com/sophiecaviezel"
+          >
+            <span class="profile__link-heading">
+              <img
+                class="profile__link-icon"
+                src="/images/icon-message.svg"
+                alt=""
+                aria-hidden="true"
+              />
+              <span class="profile__link-label">come a little closer</span>
+            </span>
+            <span class="profile__link-description">Fanvue · messages &amp; custom content</span>
+          </a>
         </div>
       </div>
 
