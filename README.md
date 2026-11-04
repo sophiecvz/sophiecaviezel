@@ -1,17 +1,16 @@
 # 🤍 Sophie Caviezel
 
-a minimal, responsive personal landing page for Sophie Caviezel, featuring a profile portrait, a primary external link, and social media links
+a minimal, responsive personal landing page for Sophie Caviezel, featuring a profile portrait, Telegram and Fanvue links, and social media links
 
 ## tech stack
 
 - HTML5
 - CSS3
-- JavaScript
 - Vite 8
 - npm
 - Prettier
 
-built with native HTML, CSS, and minimal vanilla JavaScript, without a frontend framework
+built with native HTML and CSS, without client-side JavaScript or a frontend framework
 
 ## requirements
 
