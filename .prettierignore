@@ -6,3 +6,10 @@ package-lock.json
 
 # IDE
 .idea/
+
+# Cloudflare local state
+.wrangler/
+
+# Local secrets
+.dev.vars*
+.env*
