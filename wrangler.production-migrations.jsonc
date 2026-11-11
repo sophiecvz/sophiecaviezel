@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "compatibility_date": "2026-11-05",
+  "d1_databases": [
+    {
+      "binding": "ANALYTICS_DB",
+      "database_name": "sophie-analytics",
+      "database_id": "a9f02d41-829a-4a3c-ba5a-4093fd5bf2df",
+      "migrations_dir": "migrations",
+    },
+  ],
+}

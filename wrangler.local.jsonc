@@ -1,0 +1,14 @@
+{
+  // Local development only. This ID is synthetic: never deploy or bind it remotely.
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "compatibility_date": "2026-11-05",
+  "d1_databases": [
+    {
+      "binding": "ANALYTICS_DB",
+      "database_name": "sophie-analytics-local",
+      "database_id": "0d3e0408-e622-4e13-a274-7ad01f0c9142",
+      "preview_database_id": "ANALYTICS_DB",
+      "migrations_dir": "migrations",
+    },
+  ],
+}

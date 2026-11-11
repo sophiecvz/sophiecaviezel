@@ -1,0 +1,11 @@
+{
+  "compatibility_date": "2026-11-05",
+  "d1_databases": [
+    {
+      "binding": "ANALYTICS_DB",
+      "database_name": "sophie-analytics-preview",
+      "database_id": "2b1da431-798f-4455-a643-76e89594c0aa",
+      "migrations_dir": "migrations",
+    },
+  ],
+}
