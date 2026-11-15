@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { onRequest } from '../functions/api/events.js';
+import { createD1 } from './helpers/d1-sqlite.mjs';
 
 const url = 'http://localhost:8788/api/events';
 const safariUA =
@@ -23,25 +24,14 @@ function makeRequest(payload = sampleEvent, agent = safariUA) {
   });
 }
 
-// In-memory D1 stub; SQL constraints are checked separately.
-function makeDatabase() {
-  const rows = new Map();
+// Real SQLite database with the repository migrations applied; closed when the test ends.
+function makeDatabase(t) {
+  const { db, sqlite, close } = createD1();
+  t.after(close);
   return {
-    rows,
-    prepare(statement) {
-      assert.match(statement, /ON CONFLICT\(event_id\) DO NOTHING/);
-      return {
-        bind(eventId, eventType, source) {
-          return {
-            async run() {
-              if (rows.has(eventId)) return { meta: { changes: 0 } };
-              rows.set(eventId, { eventId, eventType, source });
-              return { meta: { changes: 1 } };
-            },
-          };
-        },
-      };
-    },
+    ...db,
+    sqlite,
+    rowCount: () => sqlite.prepare('SELECT COUNT(*) AS n FROM events').get().n,
   };
 }
 
@@ -59,26 +49,26 @@ function withLimiter(env, decision = 204) {
   };
 }
 
-test('accepted event is written once and repeated event is deduplicated', async () => {
-  const database = makeDatabase();
+test('accepted event is written once and repeated event is deduplicated', async (t) => {
+  const database = makeDatabase(t);
   const env = withLimiter({ ANALYTICS_ENABLED: '1', ANALYTICS_DB: database });
   assert.equal((await onRequest({ request: makeRequest(), env })).status, 204);
   assert.equal((await onRequest({ request: makeRequest(), env })).status, 204);
-  assert.equal(database.rows.size, 1);
+  assert.equal(database.rowCount(), 1);
 });
 
-test('known bot does not reach the database', async () => {
-  const database = makeDatabase();
+test('known bot does not reach the database', async (t) => {
+  const database = makeDatabase(t);
   const response = await onRequest({
     request: makeRequest(sampleEvent, 'facebookexternalhit/1.1'),
     env: withLimiter({ ANALYTICS_ENABLED: '1', ANALYTICS_DB: database }),
   });
   assert.equal(response.status, 204);
-  assert.equal(database.rows.size, 0);
+  assert.equal(database.rowCount(), 0);
 });
 
-test('events are not stored while analytics is disabled', async () => {
-  const database = makeDatabase();
+test('events are not stored while analytics is disabled', async (t) => {
+  const database = makeDatabase(t);
   assert.equal(
     (
       await onRequest({
@@ -88,7 +78,7 @@ test('events are not stored while analytics is disabled', async () => {
     ).status,
     204,
   );
-  assert.equal(database.rows.size, 0);
+  assert.equal(database.rowCount(), 0);
 });
 
 test('missing D1 binding is a visible server error, not a recorded event', async () => {
@@ -122,8 +112,8 @@ test('database errors return 503', async () => {
   );
 });
 
-test('oversized request without Content-Length is rejected before reaching D1', async () => {
-  const database = makeDatabase();
+test('oversized request without Content-Length is rejected before reaching D1', async (t) => {
+  const database = makeDatabase(t);
   const body = JSON.stringify({ ...sampleEvent, extra: 'x'.repeat(1500) });
   const response = await onRequest({
     request: new Request(url, {
@@ -138,11 +128,11 @@ test('oversized request without Content-Length is rejected before reaching D1', 
     env: withLimiter({ ANALYTICS_ENABLED: '1', ANALYTICS_DB: database }),
   });
   assert.equal(response.status, 204);
-  assert.equal(database.rows.size, 0);
+  assert.equal(database.rowCount(), 0);
 });
 
-test('body limit is enforced even when Content-Length understates the size', async () => {
-  const database = makeDatabase();
+test('body limit is enforced even when Content-Length understates the size', async (t) => {
+  const database = makeDatabase(t);
   const request = new Request(url, {
     method: 'POST',
     headers: {
@@ -158,11 +148,11 @@ test('body limit is enforced even when Content-Length understates the size', asy
     env: withLimiter({ ANALYTICS_ENABLED: '1', ANALYTICS_DB: database }),
   });
   assert.equal(response.status, 204);
-  assert.equal(database.rows.size, 0);
+  assert.equal(database.rowCount(), 0);
 });
 
-test('malformed JSON does not reach D1', async () => {
-  const database = makeDatabase();
+test('malformed JSON does not reach D1', async (t) => {
+  const database = makeDatabase(t);
   const request = new Request(url, {
     method: 'POST',
     headers: {
@@ -181,11 +171,11 @@ test('malformed JSON does not reach D1', async () => {
     ).status,
     204,
   );
-  assert.equal(database.rows.size, 0);
+  assert.equal(database.rowCount(), 0);
 });
 
-test('streamed oversized request is cancelled without buffering the entire body', async () => {
-  const database = makeDatabase();
+test('streamed oversized request is cancelled without buffering the entire body', async (t) => {
+  const database = makeDatabase(t);
   let cancelled = false;
   let chunksSent = 0;
   const stream = new ReadableStream({
@@ -212,23 +202,23 @@ test('streamed oversized request is cancelled without buffering the entire body'
     env: withLimiter({ ANALYTICS_ENABLED: '1', ANALYTICS_DB: database }),
   });
   assert.equal(response.status, 204);
-  assert.equal(database.rows.size, 0);
+  assert.equal(database.rowCount(), 0);
   assert.equal(cancelled, true);
   assert.ok(chunksSent <= 3, `read ${chunksSent} chunks before cancellation`);
 });
 
-test('analytics remains disabled when the new flag is absent, even with a legacy flag', async () => {
-  const database = makeDatabase();
+test('analytics remains disabled when the new flag is absent, even with a legacy flag', async (t) => {
+  const database = makeDatabase(t);
   const response = await onRequest({
     request: makeRequest(),
     env: { ANALYTICS_EXPERIMENT: '1', ANALYTICS_DB: database },
   });
   assert.equal(response.status, 204);
-  assert.equal(database.rows.size, 0);
+  assert.equal(database.rowCount(), 0);
 });
 
-test('ordinary requests do not emit per-event info logs', async () => {
-  const database = makeDatabase();
+test('ordinary requests do not emit per-event info logs', async (t) => {
+  const database = makeDatabase(t);
   const originalInfo = console.info;
   const logs = [];
   console.info = (...args) => logs.push(args);
@@ -237,15 +227,15 @@ test('ordinary requests do not emit per-event info logs', async () => {
     await onRequest({ request: makeRequest(), env });
     await onRequest({ request: makeRequest(), env });
     await onRequest({ request: makeRequest(sampleEvent, 'facebookexternalhit/1.1'), env });
-    assert.equal(database.rows.size, 1);
+    assert.equal(database.rowCount(), 1);
     assert.deepEqual(logs, []);
   } finally {
     console.info = originalInfo;
   }
 });
 
-test('debug mode logs decisions without recording event IDs', async () => {
-  const database = makeDatabase();
+test('debug mode logs decisions without recording event IDs', async (t) => {
+  const database = makeDatabase(t);
   const originalInfo = console.info;
   const logs = [];
   console.info = (...args) => logs.push(args);
@@ -269,38 +259,38 @@ test('debug mode logs decisions without recording event IDs', async () => {
   }
 });
 
-test('rate-limited events return 429 and never reach D1', async () => {
-  const database = makeDatabase();
+test('rate-limited events return 429 and never reach D1', async (t) => {
+  const database = makeDatabase(t);
   const response = await onRequest({
     request: makeRequest(),
     env: withLimiter({ ANALYTICS_ENABLED: '1', ANALYTICS_DB: database }, 429),
   });
   assert.equal(response.status, 429);
   assert.equal(response.headers.get('retry-after'), '60');
-  assert.equal(database.rows.size, 0);
+  assert.equal(database.rowCount(), 0);
 });
 
-test('enabled analytics fails closed without private limiter binding', async () => {
+test('enabled analytics fails closed without private limiter binding', async (t) => {
   const originalError = console.error;
   console.error = () => {};
   try {
-    const database = makeDatabase();
+    const database = makeDatabase(t);
     const response = await onRequest({
       request: makeRequest(),
       env: { ANALYTICS_ENABLED: '1', ANALYTICS_DB: database },
     });
     assert.equal(response.status, 503);
-    assert.equal(database.rows.size, 0);
+    assert.equal(database.rowCount(), 0);
   } finally {
     console.error = originalError;
   }
 });
 
-test('enabled analytics fails closed without Cloudflare client IP', async () => {
+test('enabled analytics fails closed without Cloudflare client IP', async (t) => {
   const originalError = console.error;
   console.error = () => {};
   try {
-    const database = makeDatabase();
+    const database = makeDatabase(t);
     const request = makeRequest();
     request.headers.delete('cf-connecting-ip');
     const response = await onRequest({
@@ -308,7 +298,7 @@ test('enabled analytics fails closed without Cloudflare client IP', async () => 
       env: withLimiter({ ANALYTICS_ENABLED: '1', ANALYTICS_DB: database }),
     });
     assert.equal(response.status, 503);
-    assert.equal(database.rows.size, 0);
+    assert.equal(database.rowCount(), 0);
   } finally {
     console.error = originalError;
   }
