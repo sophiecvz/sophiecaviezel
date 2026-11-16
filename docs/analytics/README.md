@@ -41,7 +41,7 @@ use separate D1 databases and Pages bindings for Preview and Production. product
 
 ## database
 
-schema: [`migrations/0001_events.sql`](../../migrations/0001_events.sql)
+schema: [`migrations/0001_events.sql`](../../migrations/0001_events.sql) and [`migrations/0002_monthly_archive.sql`](../../migrations/0002_monthly_archive.sql)
 
 | column        | purpose                                                              |
 | ------------- | -------------------------------------------------------------------- |
@@ -61,18 +61,25 @@ sources are validated by the client and server rather than restricted by a datab
 
 ### indexes
 
-| index                         | purpose                                    |
-| ----------------------------- | ------------------------------------------ |
-| `idx_events_time_source_type` | time-range aggregations for the dashboard  |
-| `idx_events_type_seq`         | sequential event queries for notifications |
+| index                         | purpose                                                   |
+| ----------------------------- | --------------------------------------------------------- |
+| `idx_events_time_source_type` | time-range aggregations for the dashboard and the archive |
 
-indexes are defined in the initial migration
+`idx_events_type_seq` (created by `0001`) served the retired click notifications and is dropped by `0002`
+
+### monthly archive
+
+`archive_months` holds one row per archived UTC calendar month. it is written only by the analytics archive Worker in the dashboard repository, which sends each completed month to Telegram as a daily-aggregate JSON document and then deletes that month's archived events in bounded batches. the archive keeps statistics, not individual events
+
+`archive_alerts` records each actionable archive problem (halted month, late rows, repeated send failures, unarchivable data) so the Worker notifies the owner once per problem
 
 ## database migrations
 
 SQL migrations live in [`migrations/`](../../migrations/)
 
 `0001_events.sql` creates the events table and its indexes
+
+`0002_monthly_archive.sql` drops the notification index and adds `archive_months` and `archive_alerts`
 
 ```bash
 npx wrangler d1 migrations apply ANALYTICS_DB --local --config ./wrangler.local.jsonc

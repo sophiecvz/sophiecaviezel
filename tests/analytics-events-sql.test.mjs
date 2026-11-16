@@ -218,5 +218,14 @@ test('the schema has the expected columns and indexes', (t) => {
       .all()
       .map((c) => c.name);
   assert.deepEqual(indexes('idx_events_time_source_type'), ['occurred_at', 'source', 'event_type']);
-  assert.deepEqual(indexes('idx_events_type_seq'), ['event_type', 'seq']);
+  // The click-notification index was dropped by 0002 (see analytics-archive-schema.test.mjs).
+  assert.deepEqual(
+    sqlite
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'events' AND name NOT LIKE 'sqlite_%' ORDER BY name",
+      )
+      .all()
+      .map((r) => r.name),
+    ['idx_events_time_source_type'],
+  );
 });
