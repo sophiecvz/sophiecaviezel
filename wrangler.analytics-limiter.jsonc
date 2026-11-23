@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "sophie-analytics-limiter-preview",
+  "name": "sophie-analytics-limiter",
   "main": "workers/analytics-limiter.js",
   "compatibility_date": "2026-11-05",
   "workers_dev": false,
@@ -8,7 +8,7 @@
   "ratelimits": [
     {
       "name": "EVENT_RATE_LIMIT",
-      "namespace_id": "60711061",
+      "namespace_id": "60711062",
       "simple": {
         "limit": 60,
         "period": 60,
