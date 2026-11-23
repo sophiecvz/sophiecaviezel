@@ -25,7 +25,7 @@ this is an approximate rate limit, not distributed bot detection. users sharing 
 
 - run `npm test` after updating bot filters, source validation, or rate limiting
 - check legitimate mobile browser User-Agents before tightening any filter
-- use Preview and temporary `ANALYTICS_DEBUG=1` for troubleshooting
+- use a temporary `ANALYTICS_DEBUG=1` for troubleshooting and remove it afterwards
 - keep API error details out of responses and personal request data out of logs
 
 these controls reduce noise and abuse; they do not identify unique visitors or guarantee that events come from humans

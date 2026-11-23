@@ -37,7 +37,7 @@ no tracking cookies, persistent visitor IDs, or device fingerprints are used
 
 Pages Functions run only for `/api/*` via `public/_routes.json`. the static site's security headers are defined in `public/_headers`
 
-use separate D1 databases and Pages bindings for Preview and Production. production deployment and enabling analytics require explicit approval
+Production binds `ANALYTICS_DB` to `sophie-analytics-prod` and `ANALYTICS_LIMITER` to the `sophie-analytics-limiter` Worker (`wrangler.analytics-limiter.jsonc`). no Preview environment is configured. production deployment and enabling analytics require explicit approval
 
 ## database
 
@@ -83,7 +83,7 @@ SQL migrations live in [`migrations/`](../../migrations/)
 
 ```bash
 npx wrangler d1 migrations apply ANALYTICS_DB --local --config ./wrangler.local.jsonc
-npx wrangler d1 migrations apply sophie-analytics-preview --remote --config ./wrangler.preview-migrations.jsonc
+npx wrangler d1 migrations list sophie-analytics-prod --remote --config ./wrangler.production-migrations.jsonc
 ```
 
 Cloudflare tracks applied migrations separately for each database. changing an already applied migration file does not update an existing schema
@@ -104,7 +104,7 @@ npm run build
 
 ## operations
 
-- validate changes with `npm test` and a protected Preview deployment before release
+- validate changes with `npm test` and `npm run build` before release
 - keep `ANALYTICS_DEBUG` disabled during ordinary operation
 - use `wrangler pages deployment tail` for temporary troubleshooting
 - preserve `unknown` events; UTM values are labels, not verified referrers

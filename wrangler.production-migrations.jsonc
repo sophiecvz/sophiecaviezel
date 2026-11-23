@@ -4,8 +4,8 @@
   "d1_databases": [
     {
       "binding": "ANALYTICS_DB",
-      "database_name": "sophie-analytics",
-      "database_id": "a9f02d41-829a-4a3c-ba5a-4093fd5bf2df",
+      "database_name": "sophie-analytics-prod",
+      "database_id": "54be41c7-3335-461e-b801-a7f0a4018cbd",
       "migrations_dir": "migrations",
     },
   ],
