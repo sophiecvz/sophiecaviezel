@@ -9,3 +9,11 @@ dist/
 
 # macOS
 .DS_Store
+
+# Cloudflare local state
+.wrangler/
+
+# Local secrets
+.dev.vars*
+.env*
+!.env.example
